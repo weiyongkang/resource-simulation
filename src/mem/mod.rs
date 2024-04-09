@@ -2,9 +2,10 @@
 pub mod mem {
     use crate::{
         cmd::MemoryOpts,
-        tools::{number_format_conversion, random},
+        tools::{number_format_conversion, number_format_to_string, random},
     };
     use std::alloc::{alloc, dealloc, Layout};
+    use std::hint::black_box;
     use std::mem::align_of;
     use std::ptr;
     use std::{thread::sleep, time::Duration};
@@ -31,8 +32,10 @@ pub mod mem {
         }
 
         println!(
-            "最大值：{} \r\n当前值：{} \r\n目标值：{}",
-            total_memory, used_memory, target_memory
+            "总值：{} \r\n当前值：{} \r\n目标值：{}",
+            number_format_to_string(total_memory),
+            number_format_to_string(used_memory),
+            number_format_to_string(target_memory)
         );
 
         loop {
@@ -41,7 +44,7 @@ pub mod mem {
             let used_memory: u64 = sys.used_memory();
             if target_memory > used_memory {
                 let target_memory_random: u64 = random(target_memory - used_memory);
-                println!("================ \r\n当前值：{} \r\n插入值：{}\r\n目标值：{}\r\n================",used_memory,target_memory_random,target_memory);
+                println!("================ \r\n当前值：{} \r\n插入值：{}\r\n目标值：{}\r\n================",number_format_to_string(used_memory),number_format_to_string(target_memory_random),number_format_to_string(target_memory));
                 handler(target_memory_random as usize, refresh);
             }
         }
@@ -51,8 +54,8 @@ pub mod mem {
         // 创建一个 u8 布局 ， size 长度的 layout 对象
         let layout = Layout::from_size_align(size, align_of::<u8>()).unwrap();
 
-        // 分配内存
-        let ptr = unsafe { alloc(layout) };
+        // 分配内存, black_box 函数标记 内存对象是有意义的，避免被 编译器优化掉
+        let ptr = black_box(unsafe { alloc(layout) });
 
         if !ptr.is_null() {
             println!("内存：{} 分配成功！", size);
@@ -60,7 +63,7 @@ pub mod mem {
             unsafe {
                 ptr::write_bytes(ptr, 0xAB, size);
             }
-
+            println!("内存：{} 写值成功！", size);
             sleep(Duration::from_secs(refresh as u64));
 
             // 释放内存

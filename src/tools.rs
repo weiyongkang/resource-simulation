@@ -44,6 +44,24 @@ pub fn number_format_conversion(num: u64, unit: char, ad: bool) -> u64 {
     }
 }
 
+pub fn number_format_unit(num: u64) -> char {
+    match num {
+        x if x < 1024 => 'b',
+        x if x < 1024 * 1024 => 'k',
+        x if x < 1024 * 1024 * 1024 => 'm',
+        _ => 'g',
+    }
+}
+
+pub fn number_format_to_string(num: u64) -> String {
+    match num {
+        x if x < 1024 => format!("{}{}", num, 'b'),
+        x if x < 1024 * 1024 => format!("{}{}", num / 1024, 'k'),
+        x if x < 1024 * 1024 * 1024 => format!("{}{}", num / 1024 / 1024, 'm'),
+        _ => format!("{}{}", num / 1024 / 1024 / 1024, 'g'),
+    }
+}
+
 pub fn random(num: u64) -> u64 {
     let mut rng = rand::thread_rng();
     let to_first = (num as f64 * 0.85f64).ceil() as u64;

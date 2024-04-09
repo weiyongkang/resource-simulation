@@ -57,7 +57,7 @@ pub struct NetworkOpts {
  * 参数正则匹配
  */
 fn value_parser_format(value: &str) -> Result<String, String> {
-    let pattern = r"^[0-9]{1,}([kKmMGg%])$";
+    let pattern = r"^[0-9]{1,}([bkKmMGg%])$";
 
     let re = Regex::new(pattern).expect("创建正则失败 !");
 
