@@ -1,7 +1,8 @@
 use clap::Parser;
 use lazy_static::lazy_static;
+use resource_simulation::cmd::{Options, Simulation};
+use resource_simulation::io;
 use resource_simulation::mem::mem;
-use resource_simulation::{io, Options, Simulation};
 use sysinfo::System;
 
 lazy_static! {
