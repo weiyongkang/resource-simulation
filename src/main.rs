@@ -17,6 +17,9 @@ fn main() {
         Options::IO(opts) => {
             let _ = io::process(opts, cmd.refresh);
         }
+        Options::File(opts) => {
+            let _ = io::process_file(opts);
+        }
         Options::CPU => {}
         _ => {}
     }

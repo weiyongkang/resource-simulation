@@ -25,11 +25,14 @@ pub enum Options {
     #[command(name = "cpu", about = "CPU 模拟")]
     CPU,
 
-    #[command(name = "io", about = "文件 IO")]
+    #[command(name = "io", about = "文件 IO 模拟")]
     IO(IoOpts),
 
     #[command(name = "mem", about = "内存模拟")]
     Memory(MemoryOpts),
+
+    #[command(name = "file", about = "新建文件，占用空间")]
+    File(FileOpts),
 }
 
 #[derive(Parser, Debug)]
@@ -40,26 +43,32 @@ pub struct MemoryOpts {
 
 #[derive(Parser, Debug)]
 pub struct IoOpts {
-    #[arg(long, short, value_parser = verify_value_file_unit, help = "文件大小")]
-    pub num: String,
-
-    #[arg(long, default_value_t = false, help = "创建文件")]
-    pub new: bool,
-
     #[arg(long, short, value_parser = verify_value_file_unit, help = "读取流大小")]
     pub input: String,
 
     #[arg(long, short, value_parser = verify_value_file_unit, help = "写入流大小")]
     pub output: String,
 
+    #[arg(long, short,default_value = ".", value_parser = verify_value_file_dir, help = "文件路径")]
+    pub dirname: String,
+
     #[arg(long, short, default_value = "resource.simulation", help = "文件名")]
     pub filename: String,
+}
 
-    #[arg(long, short, default_value_t = 1)]
+#[derive(Parser, Debug)]
+pub struct FileOpts {
+    #[arg(long, short, default_value = "resource.create", help = "文件名")]
+    pub filename: String,
+
+    #[arg(long, default_value_t = 1, help = "文件数量")]
     pub filecount: u8,
 
-    #[arg(long, short,default_value = ".", value_parser = verify_value_file_dir)]
+    #[arg(long, short,default_value = ".", value_parser = verify_value_file_dir, help = "生成文件名路径")]
     pub dirname: String,
+
+    #[arg(long, short, value_parser = verify_value_file_unit, help = "文件大小")]
+    pub num: String,
 }
 
 #[derive(Parser, Debug)]
