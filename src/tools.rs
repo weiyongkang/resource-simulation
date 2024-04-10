@@ -1,29 +1,27 @@
 use rand::Rng;
 
 /**
- * 参数单位格式转换
+ * 参数格式转换
+ *
  */
-pub fn string_to_number_conversion(val: &str, unit: char) -> Option<u64> {
+pub fn string_to_number_format_u64(val: &str, total: Option<u64>) -> Option<u64> {
     let (num_str, unit_str) = val.split_at(val.len() - 1);
 
     let val_unit: char = unit_str.chars().last().unwrap().to_ascii_lowercase();
     let val_number: u64 = num_str.parse::<u64>().unwrap();
 
-    if val_unit == unit.to_ascii_lowercase() {
-        Some(val_number)
-    } else {
-        // if
-        match number_format_conversion(
-            number_format_conversion(val_number, val_unit, true),
-            unit,
-            false,
-        ) {
+    match &val_unit {
+        '%' => total.map(|v| ((val_number as f64 / 100f64) * v as f64).ceil() as u64),
+        c => match number_format_conversion(val_number, *c, true) {
             0 => None,
-            v => Some(v),
-        }
+            vv => Some(vv),
+        },
     }
 }
 
+/**
+ * io 单位换算
+ */
 pub fn number_format_conversion(num: u64, unit: char, ad: bool) -> u64 {
     if ad {
         match unit.to_ascii_lowercase() {
@@ -44,6 +42,9 @@ pub fn number_format_conversion(num: u64, unit: char, ad: bool) -> u64 {
     }
 }
 
+/**
+ * 通过 值获得io 单位
+ */
 pub fn number_format_unit(num: u64) -> char {
     match num {
         x if x < 1024 => 'b',
@@ -53,6 +54,9 @@ pub fn number_format_unit(num: u64) -> char {
     }
 }
 
+/**
+ * 把 字节 类型 格式化转换成更便于读取的格式
+ */
 pub fn number_format_to_string(num: u64) -> String {
     match num {
         x if x < 1024 => format!("{}{}", num, 'b'),
@@ -62,6 +66,9 @@ pub fn number_format_to_string(num: u64) -> String {
     }
 }
 
+/**
+ * 获得一个指定范围内的随机数
+ */
 pub fn random(num: u64) -> u64 {
     let mut rng = rand::thread_rng();
     let to_first = (num as f64 * 0.85f64).ceil() as u64;

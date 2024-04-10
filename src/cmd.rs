@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::{ops::Add, path::PathBuf};
 
 use clap::Parser;
 use regex::Regex;
@@ -19,34 +19,52 @@ pub struct Simulation {
 
 #[derive(Parser, Debug)]
 pub enum Options {
-    #[command(name = "net")]
+    #[command(name = "net", about = "网络IO")]
     Network(NetworkOpts),
 
-    #[command(name = "cpu")]
+    #[command(name = "cpu", about = "CPU 模拟")]
     CPU,
 
-    #[command(name = "io")]
+    #[command(name = "io", about = "文件 IO")]
     IO(IoOpts),
 
-    #[command(name = "mem")]
+    #[command(name = "mem", about = "内存模拟")]
     Memory(MemoryOpts),
 }
 
 #[derive(Parser, Debug)]
 pub struct MemoryOpts {
-    #[arg(long, short, value_parser = value_parser_format)]
+    #[arg(long, short, value_parser = verify_value_file_unit)]
     pub num: String,
 }
 
 #[derive(Parser, Debug)]
 pub struct IoOpts {
-    #[arg(long, value_parser = value_parser_format)]
+    #[arg(long, short, value_parser = verify_value_file_unit, help = "文件大小")]
     pub num: String,
+
+    #[arg(long, default_value_t = false, help = "创建文件")]
+    pub new: bool,
+
+    #[arg(long, short, value_parser = verify_value_file_unit, help = "读取流大小")]
+    pub input: String,
+
+    #[arg(long, short, value_parser = verify_value_file_unit, help = "写入流大小")]
+    pub output: String,
+
+    #[arg(long, short, default_value = "resource.simulation", help = "文件名")]
+    pub filename: String,
+
+    #[arg(long, short, default_value_t = 1)]
+    pub filecount: u8,
+
+    #[arg(long, short,default_value = ".", value_parser = verify_value_file_dir)]
+    pub dirname: String,
 }
 
 #[derive(Parser, Debug)]
 pub struct NetworkOpts {
-    #[arg(long, value_parser = value_parser_format)]
+    #[arg(long, value_parser = verify_value_file_unit)]
     pub num: String,
 
     #[arg(long, default_value_t = true)]
@@ -54,9 +72,9 @@ pub struct NetworkOpts {
 }
 
 /**
- * 参数正则匹配
+ * 校验 值 是否合法
  */
-fn value_parser_format(value: &str) -> Result<String, String> {
+fn verify_value_file_unit(value: &str) -> Result<String, String> {
     let pattern = r"^[0-9]{1,}([bkKmMGg%])$";
 
     let re = Regex::new(pattern).expect("创建正则失败 !");
@@ -65,5 +83,17 @@ fn value_parser_format(value: &str) -> Result<String, String> {
         Ok(value.into())
     } else {
         Err(String::add("参数正则匹配错误：".into(), value))
+    }
+}
+
+/**
+ * 校验目录路径是否存在
+ */
+fn verify_value_file_dir(value: &str) -> Result<String, String> {
+    let path = PathBuf::from(value);
+    if !path.is_dir() {
+        Err(format!("文件路径: {} 不存在!!", value))
+    } else {
+        Ok(value.into())
     }
 }

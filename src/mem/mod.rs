@@ -2,7 +2,7 @@
 pub mod mem {
     use crate::{
         cmd::MemoryOpts,
-        tools::{number_format_conversion, number_format_to_string, random},
+        tools::{number_format_to_string, random, string_to_number_format_u64},
     };
     use std::alloc::{alloc, dealloc, Layout};
     use std::hint::black_box;
@@ -13,21 +13,16 @@ pub mod mem {
 
     pub fn process(opts: &MemoryOpts, refresh: u8) {
         let mut sys: System = System::new_all();
-        let (num_str, unit_str) = opts.num.split_at(opts.num.len() - 1);
-
-        let val_unit: char = unit_str.chars().last().unwrap().to_ascii_lowercase();
-        let val_number = num_str.parse::<u64>().unwrap();
-
         // 获取内存总量
         let total_memory: u64 = sys.total_memory();
         let used_memory: u64 = sys.used_memory();
 
-        let target_memory: u64 = match val_unit {
-            '%' => ((val_number as f64 / 100f64) * total_memory as f64).ceil() as u64,
-            v => number_format_conversion(val_number, v, true),
+        let target_memory: u64 = match string_to_number_format_u64(&opts.num, Some(total_memory)) {
+            None => panic!("参数错误：设置值过大或其他错误 \r\nopts: {:?}", opts),
+            Some(v) => v,
         };
 
-        if target_memory > total_memory {
+        if target_memory >= total_memory {
             panic!("参数错误，目标值：{} 大于实际数据: {}", target_memory, total_memory);
         }
 
