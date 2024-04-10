@@ -1,7 +1,7 @@
 use clap::Parser;
 use lazy_static::lazy_static;
 use resource_simulation::cmd::{Options, Simulation};
-use resource_simulation::io::file;
+use resource_simulation::io;
 use resource_simulation::mem::mem;
 use sysinfo::System;
 
@@ -15,7 +15,7 @@ fn main() {
             mem::process(opts, cmd.refresh);
         }
         Options::IO(opts) => {
-            let _ = file::process(opts, cmd.refresh);
+            let _ = io::process(opts, cmd.refresh);
         }
         Options::CPU => {}
         _ => {}
