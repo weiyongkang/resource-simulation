@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::{
     fs::{File, OpenOptions},
+    hint::black_box,
     io::{Read, Write},
     path::PathBuf,
     thread::sleep,
@@ -79,12 +80,17 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
 
         #[allow(unused_unsafe)]
         unsafe {
+            // let mut strs = String::new();
+            // let _ = file.read_to_string(&mut strs);
+
             let read: &mut [u8] = &mut output[0..(input_random as usize)];
-            let _ = file.read(read);
+            let _ = black_box(file.read(read));
         };
         println!(
-            "写入数据: {}\r\n读取数据: {}",
+            "写入数据: {} => {}\r\n读取数据: {} => {}",
+            output_byte,
             number_format_to_string(output_byte),
+            input_byte,
             number_format_to_string(input_byte)
         );
         sleep(Duration::from_secs(refresh as u64));

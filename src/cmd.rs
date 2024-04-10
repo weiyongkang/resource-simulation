@@ -10,7 +10,7 @@ pub struct Simulation {
     #[arg(long, default_value_t = false, help = "是否 docker 环境")]
     pub docker: bool,
 
-    #[arg(long, short, default_value_t = 10, help = "刷新间隔")]
+    #[arg(long, short, default_value_t = 5, help = "刷新间隔")]
     pub refresh: u8,
 
     #[command(subcommand)]
