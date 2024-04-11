@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::{
 	fs::{File, OpenOptions},
-	hint::black_box,
+	// hint::black_box,
 	io::{Read, Seek, SeekFrom, Write},
 	path::PathBuf,
 	thread::sleep,
@@ -84,14 +84,15 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
 		unsafe {
 			let _ = file.write_all(output_random_bytes);
 			let _ = file.flush(); // 写的文件都 flush 到磁盘
-					  // let _ = file.seek(SeekFrom::Start(output_random - input_random));
-					  // let mut strs = String::new();
-					  // let _ = file.read_to_string(&mut strs);
-					  // println!("读取的文件长度: {}", &strs.len());
 
-			let _ = file.seek(SeekFrom::Start(0));
-			let mut read: Vec<u8> = vec![0xAB; input_random as usize];
-			let _ = black_box(file.read(read.as_mut_slice())); // 重新读取数据，从 0 位置开始读取
+			let _ = file.seek(SeekFrom::Start(output_random - input_random)); // 设置 读取的开始位置
+			let mut strs = String::new();
+			let _ = file.read_to_string(&mut strs);
+			println!("读取的文件长度: {}", &strs.len());
+
+			// let _ = file.seek(SeekFrom::Start(0));
+			// let mut read: Vec<u8> = vec![0xAB; input_random as usize];
+			// let _ = black_box(file.read(read.as_mut_slice())); // 重新读取数据，从 0 位置开始读取
 
 			let _ = file.flush();
 			let _ = file.try_clone(); // 关闭文件

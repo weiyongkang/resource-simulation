@@ -8,3 +8,4 @@ hard_tabs = true
 indent_style = "Visual"
 match_block_trailing_comma = true
 imports_granularity = "Crate"
+comment_style = "Mixed"
