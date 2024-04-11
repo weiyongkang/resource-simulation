@@ -82,15 +82,15 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
 		#[allow(unused_unsafe)]
 		unsafe {
 			let _ = file.write_all(output_random_bytes);
-			let _ = file.flush(); // 写的文件都 flush 到磁盘
-
-			// let _ = file.seek(SeekFrom::Start(output_random - input_random)); // 设置 读取的开始位置
-			// // let _ = file.try_clone();
-			// // let mut file = File::open(&curr_file_path)?; // 再次打开文件
-			// let _ = file.seek(SeekFrom::Start(0));
-			// let mut strs = black_box(String::new());
-			// let _ = file.read_to_string(&mut strs);
-			// println!("读取的文件长度: {}", &strs.len());
+			let _ = file.flush(); // 写的文件都 flush 到 缓存区域
+			let _ = file.sync_all(); // 把数据同步到磁盘文件
+						 // let _ = file.seek(SeekFrom::Start(output_random - input_random)); // 设置 读取的开始位置
+						 // // let _ = file.try_clone();
+			let mut file = File::open(&curr_file_path)?; // 再次打开文件
+											 // let _ = file.seek(SeekFrom::Start(0));
+											 // let mut strs = black_box(String::new());
+											 // let _ = file.read_to_string(&mut strs);
+											 // println!("读取的文件长度: {}", &strs.len());
 
 			// let _ = file.seek(SeekFrom::Start(0));
 			// let mut read: Vec<u8> = black_box(vec![0xAB; input_random as usize]);
