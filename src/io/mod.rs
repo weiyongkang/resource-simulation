@@ -2,7 +2,8 @@ use anyhow::Result;
 use std::{
     fs::{File, OpenOptions},
     hint::black_box,
-    io::{Read, Write},
+    io::{Read, Seek, SeekFrom, Write},
+    os::windows::fs::FileExt,
     path::PathBuf,
     thread::sleep,
     time::{Duration, SystemTime},
@@ -65,33 +66,42 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
         File::create_new(&curr_file_path)?;
     }
 
-    let mut output = vec![0xAB; output_byte as usize];
+    let output = vec![0xAB; output_byte as usize];
 
     loop {
-        let mut file = OpenOptions::new().write(true).truncate(true).open(&curr_file_path)?;
+        let mut file =
+            OpenOptions::new().write(true).read(true).truncate(true).open(&curr_file_path)?;
 
-        let output_random = &output[0..(random(output_byte) as usize)];
-        let input_random = if output_random.len() < input_byte as usize {
-            random(output_random.len() as u64)
+        let output_random = random(output_byte);
+        let input_random = if output_random < input_byte {
+            random(output_random as u64)
         } else {
             random(input_byte)
         };
-        let _ = file.write_all(output_random);
+
+        let output_random_bytes = &output[0..(random(output_byte) as usize)];
 
         #[allow(unused_unsafe)]
         unsafe {
-            // let mut strs = String::new();
-            // let _ = file.read_to_string(&mut strs);
+            let _ = file.write_all(output_random_bytes);
+            let _ = file.flush(); // 写的文件都 flush 到磁盘
+            let _ = file.seek(SeekFrom::Start(output_random - input_random));
+            let mut strs = String::new();
+            let _ = file.read_to_string(&mut strs);
+            println!("读取的文件长度: {}", &strs.len());
 
-            let read: &mut [u8] = &mut output[0..(input_random as usize)];
-            let _ = black_box(file.read(read));
+            let mut read: Vec<u8> = vec![0xAB; input_random as usize];
+            let _ = black_box(file.seek_read(read.as_mut_slice(), 0)); // 重新读取数据，从 0 位置开始读取
+
+            let _ = file.flush();
+            let _ = file.try_clone(); // 关闭文件
         };
         println!(
             "写入数据: {} => {}\r\n读取数据: {} => {}",
-            output_byte,
-            number_format_to_string(output_byte),
-            input_byte,
-            number_format_to_string(input_byte)
+            output_random,
+            number_format_to_string(output_random),
+            input_random,
+            number_format_to_string(input_random)
         );
         sleep(Duration::from_secs(refresh as u64));
     }
