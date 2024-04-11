@@ -1,7 +1,6 @@
 use anyhow::Result;
 use std::{
 	fs::{File, OpenOptions},
-	// hint::black_box,
 	io::{Read, Seek, SeekFrom, Write},
 	path::PathBuf,
 	thread::sleep,
@@ -85,17 +84,25 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
 			let _ = file.write_all(output_random_bytes);
 			let _ = file.flush(); // 写的文件都 flush 到磁盘
 
-			let _ = file.seek(SeekFrom::Start(output_random - input_random)); // 设置 读取的开始位置
-			let mut strs = String::new();
-			let _ = file.read_to_string(&mut strs);
-			println!("读取的文件长度: {}", &strs.len());
+			// let _ = file.seek(SeekFrom::Start(output_random - input_random)); // 设置 读取的开始位置
+			// // let _ = file.try_clone();
+			// // let mut file = File::open(&curr_file_path)?; // 再次打开文件
+			// let _ = file.seek(SeekFrom::Start(0));
+			// let mut strs = black_box(String::new());
+			// let _ = file.read_to_string(&mut strs);
+			// println!("读取的文件长度: {}", &strs.len());
 
 			// let _ = file.seek(SeekFrom::Start(0));
-			// let mut read: Vec<u8> = vec![0xAB; input_random as usize];
+			// let mut read: Vec<u8> = black_box(vec![0xAB; input_random as usize]);
 			// let _ = black_box(file.read(read.as_mut_slice())); // 重新读取数据，从 0 位置开始读取
 
-			let _ = file.flush();
-			let _ = file.try_clone(); // 关闭文件
+			let mut read_end: Vec<u8> = Vec::new();
+			let _ = file.seek(SeekFrom::Start(output_random - input_random));
+			match &file.read_to_end(&mut read_end) {
+				Ok(s) => println!("len: {}, read_end: {}", s, read_end.len()),
+				Err(e) => println!("e: {}", e),
+			}
+			// let _ = file.try_clone(); // 关闭文件
 		};
 		println!(
 			"写入数据: {} => {}\r\n读取数据: {} => {}",
@@ -104,6 +111,8 @@ pub fn process(opts: &IoOpts, refresh: u8) -> Result<()> {
 			input_random,
 			number_format_to_string(input_random)
 		);
+
+		// exit(0);
 		sleep(Duration::from_secs(refresh as u64));
 	}
 }
@@ -195,16 +204,13 @@ pub fn process_file(opts: &FileOpts) -> Result<()> {
 
 // #[test]
 // fn test_disk() {
-//     let opts: IoOpts = IoOpts {
-//         dirname: r"D:\test\create_file".to_string(),
-//         new: true,
-//         num: "10k".to_string(),
-//         input: "20m".to_owned(),
-//         output: "20m".to_string(),
-//         filename: "test_io.txt".to_string(),
-//         filecount: 3,
-//     };
-//     let _ = process(&opts, 1);
+// 	let opts: IoOpts = IoOpts {
+// 		dirname: r"D:\test\create_file".to_string(),
+// 		input: "10m".to_owned(),
+// 		output: "8m".to_string(),
+// 		filename: "test_io.txt".to_string(),
+// 	};
+// 	let _ = process(&opts, 1);
 // }
 
 // #[test]
